@@ -1,7 +1,9 @@
 import React from 'react';
 import TemplateAnswer from './TemplateAnswer';
 import Button from './Buttons';
-const TemplateQuestion = ({content,onClickHandler,showNextButton,questionStep,onChangeInput}) => {
+import PropTypes from 'prop-types';
+
+const TemplateQuestion = ({content,onClickHandler,showNextButton,questionStep,onChangeInput,errors}) => {
 
     const {
         question,
@@ -34,8 +36,19 @@ const TemplateQuestion = ({content,onClickHandler,showNextButton,questionStep,on
                     </div>
                 )
             }
+            <div className="errors">
+                {errors}
+            </div>
 
         </>
     )
+};
+TemplateQuestion.propTypes = {
+    content: PropTypes.object,
+    onClickHandler: PropTypes.func,
+    showNextButton: PropTypes.bool,
+    questionStep: PropTypes.number,
+    onChangeInput: PropTypes.func,
+    errors: PropTypes.string,
 };
 export default TemplateQuestion;

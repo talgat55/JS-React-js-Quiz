@@ -1,78 +1,125 @@
-import React, { useEffect, useState} from 'react';
+import React, { Component,useEffect, useState} from 'react';
 import MainLayout from './layouts/Main';
 import Questions from './api/Questions';
 import Final from './api/Final';
 import TemplateQuestion from './TempalteQuestion';
 
-const TestBlock = () => {
-
-    const [errors, SetErrors] = useState('');
-    const [answers, SetAnswers] = useState([]);
-    const [questionStep, SetQuestionStep] = useState(0);
-    const [currentQuestion, SetCurrentQuestion] = useState('');
-    const [showNextButton, SetShowNextButton] = useState(true);
+class TestBlock  extends  Component {
+    state  = {
+        errors: '',
+        answers: '',
+        questionStep: 0,
+        currentQuestion: '',
+        showNextButton: true
+    };
 
     /*
     * Check for empty current step fields is empty
      */
-    const checkCurrentFieldsByEmpty =(questionStep) =>{
+    checkCurrentFieldsByEmpty = (questionStep) =>{
+        let res;
 
-        if(answers[questionStep]?.length === 0){
-            SetErrors('Значение не выбрано');
+        if(this.state.answers[questionStep] !== "undefined" && this.state.answers[questionStep] != null){
+            this.setState({
+                errors: ''
+            });
+            res = true;
+        }else{
+            this.setState({
+                errors: 'Значение не выбрано'
+            });
+            res = false;
         }
+
+        return  res;
     };
 
     /*
     * Events by click button Next
      */
-    const onClickHandler = (e) => {
-        checkCurrentFieldsByEmpty(questionStep);
+    onClickHandler = (e) => {
 
-        if(errors.length ===0){
-            SetQuestionStep(questionStep + 1);
+        const checkErr = this.checkCurrentFieldsByEmpty(this.state.questionStep);
+
+
+        if(checkErr){
+
+            this.setState( (state, props) => {
+                return {
+                    questionStep: state.questionStep +1,
+                }
+            });
         }
-
     };
 
     /*
     *  Get values from inputs
     */
-    const onChangeInput = (e) => {
-        SetAnswers({
-            ...answers,
-            [e.target.name]: e.target.value
-        });
+    onChangeInput = (e) => {
+
+        this.setState({
+            answers: [...this.state.answers,  e.target.value ],
+        })
+
     };
-
-    useEffect(
-        () => {
-
-            let lengthQuestions = Questions.length;
-            console.log(answers);
-            if (lengthQuestions === questionStep) {
-                SetCurrentQuestion(Final[0]);
-                SetShowNextButton(false);
-                console.log(answers);
-            } else {
-                SetCurrentQuestion(Questions[questionStep]);
+    componentDidMount(){
+        this.setState( (state, props) => {
+            return {
+                currentQuestion: Questions[state.questionStep]
             }
-        }, [questionStep]
-    );
-    if (!currentQuestion) return <p>loading ...</p>;
+        });
 
-    return <MainLayout
-        titleSection="title"
-        sectionContent="section "
-    >
+
+    }
+    componentDidUpdate(prevProps, prevState) {
+        if (prevState.questionStep !== this.state.questionStep) {
+            let lengthQuestions = Questions.length;
+            let variantCondition;
+            if (lengthQuestions === this.state.questionStep) {
+                variantCondition = false;
+            } else {
+                variantCondition = true
+
+            }
+
+
+            this.setState( (state, props) => {
+                return {
+                    currentQuestion:  variantCondition ===true  ? Questions[state.questionStep] : Final[0],
+                    showNextButton:  variantCondition === false ?  false :  true
+                }
+            });
+        }
+    }
+
+
+
+    render() {
+    const {
+        currentQuestion,
+        showNextButton,
+        questionStep,
+        errors
+
+    } = this.state;
+
+        if (!currentQuestion) return <p>loading ...</p>;
+
+        return (<MainLayout
+            titleSection="title"
+            sectionContent="section "
+        >
             <TemplateQuestion
                 content={currentQuestion}
-                onClickHandler={onClickHandler}
+                onClickHandler={this.onClickHandler}
                 showNextButton={showNextButton}
                 questionStep={questionStep}
-                onChangeInput={onChangeInput}
+                onChangeInput={this.onChangeInput}
+                errors={errors}
 
             />
-    </MainLayout>
+        </MainLayout>)
+    };
 
 
 };
